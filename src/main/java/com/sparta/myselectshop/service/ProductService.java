@@ -8,13 +8,13 @@ import com.sparta.myselectshop.entity.User;
 import com.sparta.myselectshop.entity.UserRoleEnum;
 import com.sparta.myselectshop.naver.dto.ItemDto;
 import com.sparta.myselectshop.repository.ProductRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +55,7 @@ public class ProductService {
         return new ProductResponseDto(product);
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductResponseDto> getProducts(User user, int page, int size, String sortBy, boolean isAsc) {
 
         //정렬 & 페이징 처리하기 위한 Pageable 객체
@@ -62,11 +63,11 @@ public class ProductService {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page , size, sort);
 
-        UserRoleEnum UserRoleEnum = user.getRole(); //로그인 요청을 한 User의 권한 정보 가져오기
+        UserRoleEnum userRoleEnum = user.getRole(); //로그인 요청을 한 User의 권한 정보 가져오기
 
         Page<Product> productList;
 
-        if (UserRoleEnum == UserRoleEnum.USER) {
+        if (userRoleEnum == UserRoleEnum.USER) {
             productList = productRepository.findAllByUser(user,pageable);
         }else {
             productList = productRepository.findAll(pageable); // select * from
