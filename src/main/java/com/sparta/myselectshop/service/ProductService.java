@@ -8,8 +8,6 @@ import com.sparta.myselectshop.naver.dto.ItemDto;
 import com.sparta.myselectshop.repository.FolderRepository;
 import com.sparta.myselectshop.repository.ProductFolderRepository;
 import com.sparta.myselectshop.repository.ProductRepository;
-import com.sparta.myselectshop.repository.UserRepository;
-import com.sparta.myselectshop.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,8 +16,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -122,6 +118,29 @@ public class ProductService {
 
 
 
+    }
+
+    public Page<ProductResponseDto> getProductsInFolder(
+            Long folderId,
+            int page,
+            int size,
+            String sortBy,
+            boolean isAsc,
+            User user) {
+
+        //정렬 & 페이징 처리하기 위한 Pageable 객체
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page , size, sort);
+
+        // User의 해당 폴더에 등록된 상품 가져오기
+        // 현재 로그인한 유저가 등록한 폴더에 속한 상품들 조회
+        Page<Product> productList = productRepository.findAllByUserAndProductFolderList_FolderId(user,folderId,pageable);
+
+        // map() 메서드를 사용하여 ProductResponseDto로 convert
+        Page<ProductResponseDto> responseDtoList = productList.map(ProductResponseDto::new);
+
+        return responseDtoList;
     }
 
 //    //Admin 계정으로 로그인 시 수행

@@ -55,6 +55,25 @@ public class ProductController {
         productService.addFolder(productId, folderId, userDetails.getUser());
     }
 
+
+    // 해당 폴더에 등록이 되어 있는 products들을 조회
+    @GetMapping("/folders/{folderId}/products")
+    public Page<ProductResponseDto> getProductsInFolder(
+            @PathVariable Long folderId,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam("sortBy") String sortBy,
+            @RequestParam("isAsc") boolean isAsc,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        return productService.getProductsInFolder(
+                folderId, page - 1, size, sortBy, isAsc, userDetails.getUser()
+        );
+    }
+
+    // Page로 감싸고 있는 ProductResponseDtd
+
+
 //    //Admin은 모든 계정에서 등록한 상품을 조회할 수 있어야 합니다.
 //    @GetMapping("/admin/products")
 //    public List<ProductResponseDto> getAllproducts(){
