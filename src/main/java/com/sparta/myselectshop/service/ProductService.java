@@ -4,6 +4,7 @@ import com.sparta.myselectshop.dto.ProductMypriceRequestDto;
 import com.sparta.myselectshop.dto.ProductRequestDto;
 import com.sparta.myselectshop.dto.ProductResponseDto;
 import com.sparta.myselectshop.entity.Product;
+import com.sparta.myselectshop.entity.User;
 import com.sparta.myselectshop.naver.dto.ItemDto;
 import com.sparta.myselectshop.repository.ProductRepository;
 import jakarta.transaction.Transactional;
@@ -22,11 +23,11 @@ public class ProductService {
     public static final int MIN_MY_PRICE = 100;
 
 
-    public ProductResponseDto createProduct(ProductRequestDto requestDto) {
+    public ProductResponseDto createProduct(ProductRequestDto requestDto, User user) {
         // Entity 객체로 만든다.
 
         //Spring Data JPA - save (저장하면서 반환)
-        Product product = productRepository.save(new Product(requestDto));
+        Product product = productRepository.save(new Product(requestDto,user));
 
         //product의 데이터를 dto로 변환하기위해서 생성자로 보낸다.
         return new ProductResponseDto(product);
@@ -49,9 +50,9 @@ public class ProductService {
         return new ProductResponseDto(product);
     }
 
-    public List<ProductResponseDto> getProducts() {
+    public List<ProductResponseDto> getProducts(User user) {
         // select * from
-        List<Product> productList = productRepository.findAll();
+        List<Product> productList = productRepository.findAllByUser(user);
         List<ProductResponseDto> responseDtoList = new ArrayList<>();
 
         //iter
@@ -70,5 +71,20 @@ public class ProductService {
         );
 
         product.updateByItemDto(itemDto);
+    }
+
+    //Admin 계정으로 로그인 시 수행
+    public List<ProductResponseDto> getAllproducts() {
+        // select * from
+        List<Product> productList = productRepository.findAll();
+        List<ProductResponseDto> responseDtoList = new ArrayList<>();
+
+        //iter
+        for (Product product : productList) {
+            //생성자 사용
+            responseDtoList.add(new ProductResponseDto(product));
+        }
+
+        return responseDtoList;
     }
 }
