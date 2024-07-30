@@ -5,10 +5,15 @@ import com.sparta.myselectshop.dto.ProductRequestDto;
 import com.sparta.myselectshop.dto.ProductResponseDto;
 import com.sparta.myselectshop.entity.Product;
 import com.sparta.myselectshop.entity.User;
+import com.sparta.myselectshop.entity.UserRoleEnum;
 import com.sparta.myselectshop.naver.dto.ItemDto;
 import com.sparta.myselectshop.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -50,18 +55,24 @@ public class ProductService {
         return new ProductResponseDto(product);
     }
 
-    public List<ProductResponseDto> getProducts(User user) {
-        // select * from
-        List<Product> productList = productRepository.findAllByUser(user);
-        List<ProductResponseDto> responseDtoList = new ArrayList<>();
+    public Page<ProductResponseDto> getProducts(User user, int page, int size, String sortBy, boolean isAsc) {
 
-        //iter
-        for (Product product : productList) {
-            //생성자 사용
-            responseDtoList.add(new ProductResponseDto(product));
+        //정렬 & 페이징 처리하기 위한 Pageable 객체
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page , size, sort);
+
+        UserRoleEnum UserRoleEnum = user.getRole(); //로그인 요청을 한 User의 권한 정보 가져오기
+
+        Page<Product> productList;
+
+        if (UserRoleEnum == UserRoleEnum.USER) {
+            productList = productRepository.findAllByUser(user,pageable);
+        }else {
+            productList = productRepository.findAll(pageable); // select * from
         }
 
-        return responseDtoList;
+        return productList.map(ProductResponseDto::new);
     }
 
     @Transactional
@@ -73,18 +84,18 @@ public class ProductService {
         product.updateByItemDto(itemDto);
     }
 
-    //Admin 계정으로 로그인 시 수행
-    public List<ProductResponseDto> getAllproducts() {
-        // select * from
-        List<Product> productList = productRepository.findAll();
-        List<ProductResponseDto> responseDtoList = new ArrayList<>();
-
-        //iter
-        for (Product product : productList) {
-            //생성자 사용
-            responseDtoList.add(new ProductResponseDto(product));
-        }
-
-        return responseDtoList;
-    }
+//    //Admin 계정으로 로그인 시 수행
+//    public List<ProductResponseDto> getAllproducts() {
+//        // select * from
+//        List<Product> productList = productRepository.findAll();
+//        List<ProductResponseDto> responseDtoList = new ArrayList<>();
+//
+//        //iter
+//        for (Product product : productList) {
+//            //생성자 사용
+//            responseDtoList.add(new ProductResponseDto(product));
+//        }
+//
+//        return responseDtoList;
+//    }
 }
