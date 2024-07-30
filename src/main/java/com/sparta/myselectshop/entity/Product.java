@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity // JPA가 관리할 수 있는 Entity 클래스 지정
 @Getter
 @Setter
@@ -39,6 +42,13 @@ public class Product extends Timestamped {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    //Product와 ProductFolder는 양방향 관계 ➡️ mappedBy
+    //Product에서 target이 되는 필드는 Entity 필드명
+    //Product 1 : ProductFolder : N ➡️ 1:N
+    @OneToMany(mappedBy = "product")
+    private List<ProductFolder> productFolderList = new ArrayList<>();
+
 
     public Product(ProductRequestDto requestDto, User user) {
         this.title = requestDto.getTitle();
